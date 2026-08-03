@@ -1,0 +1,31 @@
+[project]
+name = "agent-harness-loop-contract"
+version = "0.1.0"
+description = "Deterministic agent harness loop contract with hooks, pull points, budgets, and a typed event stream"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Pedro Monteiro" }]
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
+files = ["src", "main.py"]
+warn_unreachable = true
