@@ -1,0 +1,72 @@
+"""Public exports for the agent harness loop contract."""
+
+from .budget import Budget, BudgetExtension, BudgetLimits, BudgetSnapshot
+from .contract import (
+    ACTIVE_STATES,
+    LEGAL_TRANSITIONS,
+    BudgetLimit,
+    BudgetNotExtended,
+    EventType,
+    HarnessError,
+    HookSignal,
+    HookTopic,
+    IllegalTransition,
+    Outcome,
+    PauseReason,
+    ProtocolError,
+    PullKind,
+    State,
+    StepStatus,
+)
+from .events import Event, EventStream, SubscriberFailure
+from .hooks import HookContext, HookFailure, HookOutcome, HookRegistry
+from .loop import (
+    HarnessLoop,
+    PauseInfo,
+    PullRequest,
+    ResumeDecision,
+    SessionResult,
+    ToolResult,
+    Transition,
+)
+from .planner import DeterministicPlanner, PlanStep, Planner, ToolCall
+
+__all__ = [
+    "ACTIVE_STATES",
+    "LEGAL_TRANSITIONS",
+    "Budget",
+    "BudgetExtension",
+    "BudgetLimit",
+    "BudgetLimits",
+    "BudgetNotExtended",
+    "BudgetSnapshot",
+    "DeterministicPlanner",
+    "Event",
+    "EventStream",
+    "EventType",
+    "HarnessError",
+    "HarnessLoop",
+    "HookContext",
+    "HookFailure",
+    "HookOutcome",
+    "HookRegistry",
+    "HookSignal",
+    "HookTopic",
+    "IllegalTransition",
+    "Outcome",
+    "PauseInfo",
+    "PauseReason",
+    "PlanStep",
+    "Planner",
+    "ProtocolError",
+    "PullKind",
+    "PullRequest",
+    "ResumeDecision",
+    "SessionResult",
+    "State",
+    "StepStatus",
+    "SubscriberFailure",
+    "ToolCall",
+    "ToolResult",
+    "Transition",
+]
