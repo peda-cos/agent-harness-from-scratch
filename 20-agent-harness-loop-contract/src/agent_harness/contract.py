@@ -121,7 +121,7 @@ ACTIVE_STATES: Final[frozenset[State]] = frozenset(
 )
 
 # REFLECTING -> PLANNING is part of the published contract state diagram. This
-# lesson's deterministic planner never requests it; future planners can.
+# lesson's deterministic planner never asks for it; future planners can.
 LEGAL_TRANSITIONS: Final[Mapping[State, frozenset[State]]] = MappingProxyType(
     {
         State.IDLE: frozenset({State.PLANNING}),
