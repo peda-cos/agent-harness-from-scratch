@@ -17,6 +17,48 @@ from typing import Any, Final, cast
 JSON_TYPES: Final = frozenset(
     {"string", "number", "integer", "boolean", "object", "array", "null"}
 )
+ASSERTION_KEYWORDS: Final = frozenset(
+    {
+        "type",
+        "properties",
+        "required",
+        "enum",
+        "minLength",
+        "maxLength",
+        "pattern",
+        "items",
+    }
+)
+ANNOTATION_KEYWORDS: Final = frozenset(
+    {
+        "$schema",
+        "$id",
+        "$comment",
+        "title",
+        "description",
+        "default",
+        "examples",
+        "deprecated",
+        "readOnly",
+        "writeOnly",
+    }
+)
+
+_TYPE_MESSAGE = "type must be a valid type name or non-empty list of unique type names"
+_PROPERTIES_MESSAGE = "properties must be an object of schemas"
+_REQUIRED_MESSAGE = "required must be a list of unique strings"
+_ENUM_MESSAGE = "enum must be a non-empty list of unique primitive values"
+_PATTERN_MESSAGE = "pattern must be a string that compiles with Python re"
+_ITEMS_MESSAGE = "items must be a schema object"
+
+
+class SchemaError(ValueError):
+    """A schema is malformed or outside the supported subset."""
+
+    def __init__(self, path: str, message: str) -> None:
+        self.path = path
+        self.message = message
+        super().__init__(f"{path or '/'}: {message}")
 
 
 @dataclass(frozen=True)
@@ -272,6 +314,125 @@ def _walk(
         errors.extend(_array_errors(instance, schema, path))
 
 
+def _is_primitive(value: object) -> bool:
+    return value is None or isinstance(value, (bool, str)) or _is_number(value)
+
+
+def _check_type(value: object, path: str) -> None:
+    if isinstance(value, str):
+        if value not in JSON_TYPES:
+            raise SchemaError(path, _TYPE_MESSAGE)
+        return
+    if not isinstance(value, list) or not value:
+        raise SchemaError(path, _TYPE_MESSAGE)
+    seen: set[str] = set()
+    for index, item in enumerate(value):
+        if (
+            not isinstance(item, str)
+            or item not in JSON_TYPES
+            or item in seen
+        ):
+            raise SchemaError(_child(path, index), _TYPE_MESSAGE)
+        seen.add(item)
+
+
+def _check_properties(value: object, path: str) -> None:
+    if not isinstance(value, Mapping):
+        raise SchemaError(path, _PROPERTIES_MESSAGE)
+    for name, subschema in value.items():
+        if not isinstance(name, str):
+            raise SchemaError(path, "properties keys must be strings")
+        _check_schema(subschema, _child(path, name))
+
+
+def _check_required(value: object, path: str) -> None:
+    if not isinstance(value, list):
+        raise SchemaError(path, _REQUIRED_MESSAGE)
+    seen: set[str] = set()
+    for index, item in enumerate(value):
+        if not isinstance(item, str) or item in seen:
+            raise SchemaError(_child(path, index), _REQUIRED_MESSAGE)
+        seen.add(item)
+
+
+def _check_enum(value: object, path: str) -> None:
+    if not isinstance(value, list) or not value:
+        raise SchemaError(path, _ENUM_MESSAGE)
+    seen: list[object] = []
+    for index, item in enumerate(value):
+        if not _is_primitive(item) or any(
+            _json_equal(item, previous) for previous in seen
+        ):
+            raise SchemaError(_child(path, index), _ENUM_MESSAGE)
+        seen.append(item)
+
+
+def _check_length(value: object, path: str, keyword: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise SchemaError(path, f"{keyword} must be a non-negative integer")
+    return value
+
+
+def _check_pattern(value: object, path: str) -> None:
+    if not isinstance(value, str):
+        raise SchemaError(path, _PATTERN_MESSAGE)
+    try:
+        re.compile(value)
+    except re.error:
+        raise SchemaError(path, _PATTERN_MESSAGE) from None
+
+
+def _check_keyword(keyword: str, value: object, path: str) -> None:
+    keyword_path = _child(path, keyword)
+    if keyword == "type":
+        _check_type(value, keyword_path)
+    elif keyword == "properties":
+        _check_properties(value, keyword_path)
+    elif keyword == "required":
+        _check_required(value, keyword_path)
+    elif keyword == "enum":
+        _check_enum(value, keyword_path)
+    elif keyword in {"minLength", "maxLength"}:
+        _check_length(value, keyword_path, keyword)
+    elif keyword == "pattern":
+        _check_pattern(value, keyword_path)
+    elif keyword == "items":
+        if not isinstance(value, Mapping):
+            raise SchemaError(keyword_path, _ITEMS_MESSAGE)
+        _check_schema(value, keyword_path)
+
+
+def _check_schema(schema: object, path: str) -> None:
+    if not isinstance(schema, Mapping):
+        raise SchemaError(path, "schema must be an object")
+    for key in schema:
+        if not isinstance(key, str):
+            raise SchemaError(path, "schema keys must be strings")
+    for key, value in schema.items():
+        if key in ANNOTATION_KEYWORDS:
+            continue
+        if key not in ASSERTION_KEYWORDS:
+            raise SchemaError(_child(path, key), f"unsupported keyword {key!r}")
+        _check_keyword(key, value, path)
+
+    if "minLength" in schema and "maxLength" in schema:
+        minimum = cast(int, schema["minLength"])
+        maximum = cast(int, schema["maxLength"])
+        if minimum > maximum:
+            raise SchemaError(
+                _child(path, "minLength"),
+                "minLength must not exceed maxLength",
+            )
+
+
+def check_schema(schema: object, path: str = "") -> None:
+    """Reject a schema that is malformed or outside the supported subset.
+
+    ``path`` is a JSON Pointer into the schema, used to prefix nested errors.
+    """
+    _check_schema(schema, path)
+
+
 def validate_instance(
     schema: Mapping[str, Any], instance: object
 ) -> list[ValidationError]:
@@ -284,3 +445,6 @@ def validate_instance(
     errors: list[ValidationError] = []
     _walk(schema, instance, "", errors)
     return errors
+
+
+__all__ = ["SchemaError", "ValidationError", "check_schema", "validate_instance"]
