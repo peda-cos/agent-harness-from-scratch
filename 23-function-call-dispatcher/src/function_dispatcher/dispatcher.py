@@ -112,6 +112,8 @@ class Dispatcher:
         self._clock = clock
         self._on_event = on_event
         self._semaphore = asyncio.Semaphore(self._max_concurrency)
+        self._pending: dict[str, asyncio.Task[DispatchOutcome]] = {}
+        self._completed: dict[str, tuple[float, Ok]] = {}
 
     async def dispatch(
         self,
@@ -140,12 +142,68 @@ class Dispatcher:
 
         effective_timeout = record.timeout_ms if override is None else override
         if key is not None:
-            return await self._run_with_retries(
+            return await self._dispatch_keyed(
                 record, params, effective_timeout, budget, key
             )
         return await self._run_with_retries(
             record, params, effective_timeout, budget, None
         )
+
+    async def _dispatch_keyed(
+        self,
+        record: ToolRecord,
+        args: Mapping[str, object],
+        timeout_ms: int,
+        budget: Budget | None,
+        key: str,
+    ) -> DispatchOutcome:
+        self._prune_completed(self._clock())
+
+        pending = self._pending.get(key)
+        if pending is not None:
+            outcome: DispatchOutcome = await asyncio.shield(pending)
+            return outcome
+
+        completed = self._completed.get(key)
+        if completed is not None:
+            expires_at, outcome = completed
+            if expires_at > self._clock():
+                return outcome
+            del self._completed[key]
+
+        task = asyncio.create_task(
+            self._run_with_retries(record, args, timeout_ms, budget, key)
+        )
+        self._pending[key] = task
+        task.add_done_callback(lambda finished: self._finish_key(key, finished))
+        result: DispatchOutcome = await asyncio.shield(task)
+        return result
+
+    def _finish_key(
+        self, key: str, task: asyncio.Task[DispatchOutcome]
+    ) -> None:
+        self._pending.pop(key, None)
+        if task.cancelled():
+            return
+        if task.exception() is not None:
+            return
+        outcome = task.result()
+        if isinstance(outcome, Ok) and self._cache_ttl > 0:
+            now = self._clock()
+            self._prune_completed(now)
+            self._completed[key] = (now + self._cache_ttl, outcome)
+            while len(self._completed) > self._max_cache_entries:
+                oldest = next(iter(self._completed))
+                del self._completed[oldest]
+
+    def _prune_completed(self, now: float) -> None:
+        expired = [
+            key
+            for key, (expires_at, _outcome) in self._completed.items()
+            if expires_at <= now
+        ]
+        for key in expired:
+            del self._completed[key]
 
     async def _run_with_retries(
         self,
