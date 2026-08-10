@@ -5,4 +5,5 @@ cd "$(dirname "$0")"
 export UV_CACHE_DIR="${UV_CACHE_DIR:-$PWD/.uv-cache}"
 uv sync --frozen --all-groups --no-progress
 .venv/bin/python -m pytest -q
-.venv/bin/python -m mypy src
+.venv/bin/python -m mypy src main.py bench.py
+.venv/bin/python main.py >/dev/null
