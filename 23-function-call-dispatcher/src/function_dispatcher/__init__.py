@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .budget import Budget, ToolCallBudget
+from .dispatcher import Dispatcher, DispatchOutcome, Ok
 from .errors import (
     JSONRPC_CODES,
     JSONRPC_INTERNAL_ERROR,
@@ -31,7 +32,10 @@ __all__ = [
     "JSONRPC_METHOD_NOT_FOUND",
     "Budget",
     "DispatchError",
+    "DispatchOutcome",
+    "Dispatcher",
     "ErrorKind",
+    "Ok",
     "Registry",
     "ToolCallBudget",
     "ToolNotFoundError",
