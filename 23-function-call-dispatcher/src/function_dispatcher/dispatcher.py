@@ -5,8 +5,8 @@ from __future__ import annotations
 import asyncio
 import random
 import time
-from collections.abc import Awaitable, Callable, Mapping
-from dataclasses import dataclass
+from collections.abc import Awaitable, Callable, Mapping, Sequence
+from dataclasses import dataclass, field
 from typing import Literal, TypeAlias
 
 from .budget import Budget
@@ -32,6 +32,17 @@ class Ok:
 
 
 DispatchOutcome: TypeAlias = Ok | DispatchError
+
+
+@dataclass(frozen=True, slots=True)
+class Call:
+    """One entry in a bounded fan-out."""
+
+    name: str
+    args: Mapping[str, object] = field(default_factory=dict)
+    idempotency_key: str | None = None
+    timeout_ms: int | None = None
+    budget: Budget | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -148,6 +159,20 @@ class Dispatcher:
         return await self._run_with_retries(
             record, params, effective_timeout, budget, None
         )
+
+    async def gather_bounded(self, calls: Sequence[Call]) -> list[DispatchOutcome]:
+        """Dispatch a fan-out in input order under the shared concurrency cap."""
+        coroutines = [
+            self.dispatch(
+                call.name,
+                call.args,
+                idempotency_key=call.idempotency_key,
+                timeout_ms=call.timeout_ms,
+                budget=call.budget,
+            )
+            for call in calls
+        ]
+        return list(await asyncio.gather(*coroutines))
 
     async def _dispatch_keyed(
         self,
@@ -288,6 +313,7 @@ class Dispatcher:
 
 
 __all__ = [
+    "Call",
     "Dispatcher",
     "DispatchOutcome",
     "Ok",
