@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .chain import ChainResult, GateChain
+from .executor import Dispatcher, Execution, GatedToolExecutor
 from .gates import (
     BudgetGate,
     GateContext,
@@ -22,9 +23,12 @@ __version__ = "0.1.0"
 __all__ = [
     "BudgetGate",
     "ChainResult",
+    "Dispatcher",
+    "Execution",
     "GateChain",
     "GateContext",
     "GateDecision",
+    "GatedToolExecutor",
     "Observation",
     "ObservationLedger",
     "PerToolBudgetGate",
