@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .chain import ChainResult, GateChain
 from .gates import (
     BudgetGate,
     GateContext,
@@ -20,6 +21,8 @@ __version__ = "0.1.0"
 
 __all__ = [
     "BudgetGate",
+    "ChainResult",
+    "GateChain",
     "GateContext",
     "GateDecision",
     "Observation",
