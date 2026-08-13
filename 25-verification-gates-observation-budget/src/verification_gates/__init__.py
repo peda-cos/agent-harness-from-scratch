@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .ledger import ObservationLedger
 from .models import GateDecision, Observation, ToolCall
 from .tokens import TRUNCATION_MARKER, clip_text, estimate_tokens
 
@@ -10,6 +11,7 @@ __version__ = "0.1.0"
 __all__ = [
     "GateDecision",
     "Observation",
+    "ObservationLedger",
     "TRUNCATION_MARKER",
     "ToolCall",
     "clip_text",
