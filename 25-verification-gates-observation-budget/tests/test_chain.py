@@ -96,7 +96,7 @@ def test_constructor_rejects_empty_duplicate_and_bad_names() -> None:
         GateChain(duplicate)
 
     with pytest.raises(ValueError, match="non-empty"):
-        GateChain([SpyGate("", GateDecision.permit(""))])
+        GateChain([SpyGate("", GateDecision.permit("somewhere_else"))])
 
 
 def test_review_rejects_mislabeled_or_foreign_decisions() -> None:
