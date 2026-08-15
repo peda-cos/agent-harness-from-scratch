@@ -207,6 +207,22 @@ Turn 2 originally produced 147 tokens; only the 61 remaining tokens were retaine
 turn 2; turn 1 is outside the two-turn window. The probes exercise the other gates and
 the refusal threshold.
 
+### Reading the trace
+
+| Event | Meaning |
+|---|---|
+| `call` | The model-authored call and its `observed_turn` grounding claim. |
+| `gate` | One verdict in chain order; the first `allow:false` ends the chain. |
+| `observation` | What the ledger recorded: turn, tool, observed tokens, truncation flag, cumulative. |
+| `denied` | The terminal refusal and refusal count; no observation exists. |
+| `context` | The visible/masked split at the current turn and window. |
+| `probe` | An isolated gate check that never dispatches a tool. |
+| `summary` | Allowed/denied/refusal counts and observed, original, and omitted tokens. |
+
+The trace is JSONL with sorted keys and no timestamps. `Execution.to_dict()` is the
+content-free per-call record; the demo adds `call`, `context`, and `probe` events around
+it so the whole session is inspectable.
+
 ## Testing strategy
 
 There are 57 tests, all offline and deterministic. The suite is grouped by contract:
@@ -267,9 +283,9 @@ costs, not model or tool latency, and run-to-run variation is expected.
 
 | Path | Result |
 |---|---:|
-| Four-gate chain review, allow | 5.516 µs/call (181,281 calls/s) |
-| Gated execution, 10-token observation | 10.304 µs/call (97,054 calls/s) |
-| `clip_text`, 4 KiB to 100 tokens | 0.375 µs/call (2,664,469 calls/s) |
+| Four-gate chain review, allow | 5.546 µs/call (180,299 calls/s) |
+| Gated execution, 10-token observation | 10.253 µs/call (97,529 calls/s) |
+| `clip_text`, 4 KiB to 100 tokens | 0.385 µs/call (2,595,145 calls/s) |
 
 The demo's asserted observations:
 
