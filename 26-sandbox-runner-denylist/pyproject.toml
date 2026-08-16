@@ -1,0 +1,31 @@
+[project]
+name = "sandbox-runner-denylist"
+version = "0.1.0"
+description = "A subprocess sandbox with an executable denylist, argv inspection, a path jail, timeout, and truncation"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Pedro Monteiro" }]
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
+files = ["src", "main.py", "bench.py"]
+warn_unreachable = true
