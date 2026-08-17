@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -179,6 +180,8 @@ class SandboxConfig:
             self.timeout_seconds, (int, float)
         ):
             raise ValueError("timeout_seconds must be a number")
+        if not math.isfinite(self.timeout_seconds):
+            raise ValueError("timeout_seconds must be finite")
         if self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
         object.__setattr__(self, "timeout_seconds", float(self.timeout_seconds))
@@ -222,6 +225,8 @@ class SandboxResult:
             self.duration_ms, (int, float)
         ):
             raise ValueError("duration_ms must be a number")
+        if not math.isfinite(self.duration_ms):
+            raise ValueError("duration_ms must be finite")
         if self.duration_ms < 0:
             raise ValueError("duration_ms must be non-negative")
         object.__setattr__(self, "duration_ms", float(self.duration_ms))

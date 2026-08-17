@@ -57,6 +57,9 @@ def test_config_rejects_bad_roots_and_limits(tmp_path: Path) -> None:
         SandboxConfig(project_root=tmp_path, timeout_seconds=0)
     with pytest.raises(ValueError):
         SandboxConfig(project_root=tmp_path, timeout_seconds=True)
+    for invalid_timeout in (float("nan"), float("inf"), -float("inf")):
+        with pytest.raises(ValueError):
+            SandboxConfig(project_root=tmp_path, timeout_seconds=invalid_timeout)
     with pytest.raises(ValueError):
         SandboxConfig(project_root=tmp_path, denylist={"rm", ""})
     with pytest.raises(ValueError):
@@ -109,6 +112,9 @@ def test_result_invariants_and_serialization() -> None:
         SandboxResult(
             TIMEOUT_EXIT_CODE, "", "", False, True, False, "timeout", -1
         )
+    for invalid_duration in (float("nan"), float("inf"), -float("inf")):
+        with pytest.raises(ValueError):
+            SandboxResult(0, "", "", False, False, False, None, invalid_duration)
     with pytest.raises(ValueError):
         SandboxResult(True, "", "", False, False, False, None, 0)  # type: ignore[arg-type]
     with pytest.raises(ValueError):
