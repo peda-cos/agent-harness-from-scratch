@@ -1,0 +1,12 @@
+{
+  "id": "error-message-typo",
+  "goal": "The ValueError in parse_port says 'invalid portt'. Correct it to 'invalid port' and change nothing else.",
+  "setup": {"copy": "buggy"},
+  "verifier": {
+    "name": "regex_match",
+    "params": {
+      "path": "validation.py",
+      "pattern": "(?s)^(?!.*portt).*raise ValueError\\(\"invalid port\"\\)"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "factorial-missing-return",
+  "goal": "factorial(n) computes the product but never returns it. Return the computed result so factorial(0) == 1 and factorial(5) == 120.",
+  "setup": {"copy": "buggy"},
+  "verifier": {
+    "name": "file_equals",
+    "params": {
+      "path": "factorial.py",
+      "expected": "expected/factorial.py"
+    }
+  }
+}

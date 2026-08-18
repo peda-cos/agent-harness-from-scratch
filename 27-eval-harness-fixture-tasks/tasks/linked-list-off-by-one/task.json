@@ -1,0 +1,12 @@
+{
+  "id": "linked-list-off-by-one",
+  "goal": "to_list(head) drops the last node because of its loop condition. Return every value and handle an empty list.",
+  "setup": {"copy": "buggy"},
+  "verifier": {
+    "name": "file_equals",
+    "params": {
+      "path": "traversal.py",
+      "expected": "expected/traversal.py"
+    }
+  }
+}

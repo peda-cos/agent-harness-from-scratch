@@ -1,0 +1,9 @@
+{
+  "id": "empty-function-body",
+  "goal": "slugify(text) is empty. Trim and lowercase the text, join words with hyphens, and make the check script pass.",
+  "setup": {"copy": "buggy"},
+  "verifier": {
+    "name": "shell_exit_zero",
+    "params": {"command": ["{python}", "check_slugify.py"]}
+  }
+}

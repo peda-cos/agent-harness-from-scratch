@@ -1,0 +1,9 @@
+{
+  "id": "fizzbuzz-off-by-one",
+  "goal": "fizzbuzz(n) omits n because of its range. Fix the off-by-one so the check script passes; do not edit the check script.",
+  "setup": {"copy": "buggy"},
+  "verifier": {
+    "name": "shell_exit_zero",
+    "params": {"command": ["{python}", "check_fizzbuzz.py"]}
+  }
+}
