@@ -243,6 +243,10 @@ re-runs the deterministic verifiers against whatever the adapter wrote. No provi
 imported by this repository, and no provider mode is enabled by default; the offline core
 is complete on its own.
 
+No GPU mode is included. A local GPU model fits the same boundary: only the candidate
+implementation changes, while task setup, verifier execution, scoring, and aggregation stay
+on the CPU-side harness.
+
 ## Measured locally
 
 Gate: `./verify.sh` exited 0; a second run also exited 0.
@@ -270,6 +274,8 @@ non-zero cost aggregation path is covered by synthetic candidates in the tests.
 
 - **In-process candidate.** The harness does not sandbox candidate code. A real untrusted
   agent needs an OS/container boundary; the scratch directory only isolates fixture state.
+  Candidate code can access the fixture tree, including `expected/` artifacts, so adapters
+  must not read them.
 - **Self-reported telemetry.** Latency and cost are trusted from `SampleResult`. Real
   adapters must measure them honestly. There is no provider-side cross-check.
 - **Shell guardrail.** `shell_exit_zero` denies common destructive executables and avoids a
