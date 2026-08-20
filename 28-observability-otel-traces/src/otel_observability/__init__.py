@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .exporter import JSONLExporter
+from .instrumentation import wrap_tool_call
 from .metrics import (
     DEFAULT_LATENCY_BUCKETS,
     Counter,
@@ -45,6 +47,7 @@ __all__ = [
     "Counter",
     "GenAISpan",
     "Histogram",
+    "JSONLExporter",
     "MetricsRegistry",
     "SpanBuilder",
     "SpanContext",
@@ -52,4 +55,5 @@ __all__ = [
     "new_span_id",
     "new_trace_id",
     "prometheus_exposition",
+    "wrap_tool_call",
 ]
