@@ -99,7 +99,7 @@ Expected output:
 │   ├── metrics.py                # Counter, Histogram, registry, exposition
 │   ├── instrumentation.py        # wrap_tool_call and implicit activation
 │   └── __init__.py               # public exports
-└── tests/                        # 36 deterministic tests, no network
+└── tests/                        # 37 deterministic tests, no network
 ```
 
 ## Design decisions
@@ -173,7 +173,7 @@ same. For a backend, either import the JSONL into a collector/filelog pipeline o
 Measured on Linux x64 with Python 3.14.10, using the committed fixture and a single run;
 timings vary by machine.
 
-- `./verify.sh`: 36 tests passed; strict mypy reported `Success: no issues found in 6 source files`.
+- `./verify.sh`: 37 tests passed; strict mypy reported `Success: no issues found in 6 source files`.
 - Demo: 4 spans; `tools_called_total{tool="read_file"} 2`,
   `tools_called_total{tool="write_file"} 1`; `read_file` histogram count 2 with both
   observations at or below the 10 ms bucket; `write_file` count 1 at or below 50 ms.

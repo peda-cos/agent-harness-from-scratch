@@ -171,6 +171,19 @@ def test_exposition_escapes_label_values() -> None:
     assert 'escaped_total{tool="a\\"b\\\\c\\nd"} 1' in text
 
 
+def test_exposition_groups_counters_before_histograms_and_sorts_families() -> None:
+    registry = MetricsRegistry()
+    registry.histogram("z_histogram", "Z.").observe(1)
+    registry.histogram("a_histogram", "A.").observe(1)
+    registry.counter("z_counter", "Z.").inc()
+    registry.counter("a_counter", "A.").inc()
+
+    text = prometheus_exposition(registry)
+    assert text.index("# TYPE a_counter") < text.index("# TYPE z_counter")
+    assert text.index("# TYPE z_counter") < text.index("# TYPE a_histogram")
+    assert text.index("# TYPE a_histogram") < text.index("# TYPE z_histogram")
+
+
 def test_empty_registry_and_unobserved_metrics_produce_no_text() -> None:
     registry = MetricsRegistry()
     assert prometheus_exposition(registry) == ""
